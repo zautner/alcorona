@@ -16,6 +16,13 @@ import (
 	"github.com/chenjiandongx/go-echarts/charts"
 )
 
+var (
+	HEADER_ONE       = os.Getenv("header_rapidapi")
+	HEADER_ONE_VALUE = os.Getenv("header_rapidapi_value")
+	HEADER_TWO       = os.Getenv("header_rapidapi_key")
+	HEADER_TWO_VALUE = os.Getenv("header_rapidapi_key_value")
+)
+
 //////// TYPES /////////
 /*CoronaRecord holds one report per country */
 type CoronaRecord struct {
@@ -80,7 +87,7 @@ func (d *CoronaList) newCases() []int {
 	ret := make([]int, len(d.StatsByCountry))
 	for i, val := range d.StatsByCountry {
 		var t int
-		_, e := fmt.Sscan(val.NewCasesString, &t)
+		_, e := fmt.Sscan(strings.ReplaceAll(val.NewCasesString, ",", ""), &t)
 		if e == nil {
 			ret[i] = t
 		}
@@ -146,14 +153,27 @@ func chart(w http.ResponseWriter, r *http.Request) {
 
 func drawChart(d *CoronaList, w http.ResponseWriter) {
 	graph := charts.NewLine()
-	graph.SetGlobalOptions(charts.TitleOpts{Title: "Corona cases", Subtitle: d.Country})
+	graph.SetGlobalOptions(charts.TitleOpts{Left: "10", Right: "10", Title: "Corona cases", Subtitle: d.Country},
+		charts.LegendOpts{Left: "10", Right: "10"},
+		charts.TooltipOpts{Show: true},
+		charts.YAxisOpts{Scale: true, Type: "value"},
+		charts.ColorOpts{"Brown", "Navy"},
+	)
 	graph.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Deaths", d.deaths())
 	graphES := charts.NewEffectScatter()
-	graphES.AddXAxis(d.timeSeries()).AddYAxis("New cases", d.newCases()).AddYAxis("New deaths", d.newDeaths())
+	graphES.SetGlobalOptions(
+		charts.LegendOpts{Left: "10", Right: "10"},
+		charts.TooltipOpts{Show: true},
+		charts.YAxisOpts{Scale: true, Type: "value"},
+		charts.ColorOpts{"Red", "black"},
+	)
+	graphES.AddXAxis(d.timeSeries()).
+		AddYAxis("New cases", d.newCases(), charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"}).
+		AddYAxis("New deaths", d.newDeaths(), charts.RippleEffectOpts{Period: 4, Scale: 10, BrushType: "stroke"})
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
 	defer os.Remove(f.Name())
 	if e == nil {
-		graph.Render(w, f)
+		graphES.Overlap(graph)
 		graphES.Render(w, f)
 	}
 }
@@ -177,8 +197,8 @@ func readData(country string, asc bool) (*CoronaList, error) {
 	url := "https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_particular_country.php?country=" + country
 	req, _ := http.NewRequest("GET", url, nil)
 
-	req.Header.Add("x-rapidapi-host", "coronavirus-monitor.p.rapidapi.com")
-	req.Header.Add("x-rapidapi-key", "051ca7468fmsh2584062d4642570p169ec0jsn5598e50e8382")
+	req.Header.Add(HEADER_ONE, HEADER_ONE_VALUE)
+	req.Header.Add(HEADER_TWO, HEADER_TWO_VALUE)
 
 	res, err := http.DefaultClient.Do(req)
 	if nil != err {
