@@ -151,6 +151,7 @@ func drawChart(d *CoronaList, w http.ResponseWriter) {
 	graphES := charts.NewEffectScatter()
 	graphES.AddXAxis(d.timeSeries()).AddYAxis("New cases", d.newCases()).AddYAxis("New deaths", d.newDeaths())
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
+	defer os.Remove(f.Name())
 	if e == nil {
 		graph.Render(w, f)
 		graphES.Render(w, f)
