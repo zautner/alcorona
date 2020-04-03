@@ -96,7 +96,7 @@ func (d *CoronaList) newCases() []int {
 	return ret
 }
 
-func (d *CoronaList) critical() []float32 {
+func (d *CoronaList) criticalRelative() []float32 {
 	ret := make([]float32, len(d.StatsByCountry))
 	for i, val := range d.StatsByCountry {
 		var t float32
@@ -105,8 +105,8 @@ func (d *CoronaList) critical() []float32 {
 			println(t, ret[i])
 		} else {
 			var denominator float32
-			_, e := fmt.Sscan(strings.ReplaceAll(val.NewCasesString, ",", ""), &t)
-			_, e = fmt.Sscan(strings.ReplaceAll(val.TotalCasesString, ",", ""), &denominator)
+			_, e := fmt.Sscan(strings.ReplaceAll(val.SeriousCriticalString, ",", ""), &t)
+			_, e = fmt.Sscan(strings.ReplaceAll(val.ActiveCasesString, ",", ""), &denominator)
 			if e == nil {
 				ret[i] = t / denominator
 			}
@@ -116,6 +116,19 @@ func (d *CoronaList) critical() []float32 {
 	return ret
 }
 
+unc (d *CoronaList) critical() []float32 {
+	ret := make([]float32, len(d.StatsByCountry))
+	for i, val := range d.StatsByCountry {
+		var t float32
+			_, e := fmt.Sscan(strings.ReplaceAll(val.SeriousCriticalString, ",", ""), &t)
+			if e == nil {
+				ret[i] = t
+			}
+		}
+		println(t, ret[i])
+	}
+	return ret
+}
 func (d *CoronaList) newDeaths() []int {
 	ret := make([]int, len(d.StatsByCountry))
 	for i, val := range d.StatsByCountry {
@@ -190,6 +203,7 @@ func drawChart(d *CoronaList, w http.ResponseWriter) {
 	)
 	graphES.AddXAxis(d.timeSeries()).
 		AddYAxis("New", d.newCases(), charts.RippleEffectOpts{Period: 5, Scale: 6, BrushType: "line"}).
+		AddYAxis("Critical rel", d.criticalRelative(), charts.RippleEffectOpts{Period: 10, Scale: 6, BrushType: "line"}).
 		AddYAxis("New deaths", d.newDeaths(), charts.RippleEffectOpts{Period: 2, Scale: 10, BrushType: "stroke"})
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
 	defer os.Remove(f.Name())
