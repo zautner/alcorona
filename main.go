@@ -96,6 +96,26 @@ func (d *CoronaList) newCases() []int {
 	return ret
 }
 
+func (d *CoronaList) rateNewOld() []float32 {
+	ret := make([]float32, len(d.StatsByCountry))
+	for i, val := range d.StatsByCountry {
+		var t float32
+		if i < 7 {
+			ret[i] = 0.0
+			println(t, ret[i])
+		} else {
+			var denominator float32
+			_, e := fmt.Sscan(strings.ReplaceAll(val.NewCasesString, ",", ""), &t)
+			_, e = fmt.Sscan(strings.ReplaceAll(val.TotalCasesString, ",", ""), &denominator)
+			if e == nil {
+				ret[i] = t / denominator
+			}
+		}
+		println(t, ret[i])
+	}
+	return ret
+}
+
 func (d *CoronaList) newDeaths() []int {
 	ret := make([]int, len(d.StatsByCountry))
 	for i, val := range d.StatsByCountry {
@@ -141,6 +161,7 @@ func main() {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
+	println(HEADER_ONE, HEADER_ONE_VALUE, HEADER_TWO, HEADER_TWO_VALUE)
 	d := getDataJson(r.RequestURI[1:])
 	tpl.ExecuteTemplate(w, "index.gohtml", d)
 	drawChart(d, w)
@@ -157,19 +178,19 @@ func drawChart(d *CoronaList, w http.ResponseWriter) {
 		charts.LegendOpts{Left: "10", Right: "10"},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value"},
-		charts.ColorOpts{"Brown", "Navy"},
 	)
-	graph.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Deaths", d.deaths())
+
+	graph.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Deaths", d.deaths()).AddYAxis("New cases", d.newCases())
 	graphES := charts.NewEffectScatter()
 	graphES.SetGlobalOptions(
-		charts.LegendOpts{Left: "10", Right: "10"},
+		charts.LegendOpts{Left: "100", Right: "10"},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value"},
-		charts.ColorOpts{"Red", "black"},
+		charts.ColorOpts{"Red", "black", "orange", "brown", "navy", "peach"},
 	)
 	graphES.AddXAxis(d.timeSeries()).
-		AddYAxis("New cases", d.newCases(), charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"}).
-		AddYAxis("New deaths", d.newDeaths(), charts.RippleEffectOpts{Period: 4, Scale: 10, BrushType: "stroke"})
+		AddYAxis("New", d.newCases(), charts.RippleEffectOpts{Period: 5, Scale: 6, BrushType: "line"}).
+		AddYAxis("New deaths", d.newDeaths(), charts.RippleEffectOpts{Period: 2, Scale: 10, BrushType: "stroke"})
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
 	defer os.Remove(f.Name())
 	if e == nil {
