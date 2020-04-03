@@ -96,7 +96,7 @@ func (d *CoronaList) newCases() []int {
 	return ret
 }
 
-func (d *CoronaList) rateNewOld() []float32 {
+func (d *CoronaList) critical() []float32 {
 	ret := make([]float32, len(d.StatsByCountry))
 	for i, val := range d.StatsByCountry {
 		var t float32
@@ -180,7 +180,7 @@ func drawChart(d *CoronaList, w http.ResponseWriter) {
 		charts.YAxisOpts{Scale: true, Type: "value"},
 	)
 
-	graph.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Deaths", d.deaths()).AddYAxis("New cases", d.newCases())
+	graph.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Deaths", d.deaths()).AddYAxis("New cases", d.critical())
 	graphES := charts.NewEffectScatter()
 	graphES.SetGlobalOptions(
 		charts.LegendOpts{Left: "100", Right: "10"},
