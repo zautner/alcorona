@@ -119,7 +119,6 @@ func (d *CoronaList) totalCases() []int {
 		if e == nil {
 			ret[i] = t
 		}
-		println(t, ret[i])
 	}
 	return ret
 }
@@ -131,7 +130,6 @@ func (d *CoronaList) newCases() []int {
 		if e == nil {
 			ret[i] = t
 		}
-		println(t, ret[i])
 	}
 	return ret
 }
@@ -143,7 +141,6 @@ func (d *CoronaList) active() []int {
 		if e == nil {
 			ret[i] = t
 		}
-		println(t, ret[i])
 	}
 	return ret
 }
@@ -156,7 +153,6 @@ func (d *CoronaList) newDeaths() []int {
 		if e == nil {
 			ret[i] = t
 		}
-		println(t, ret[i])
 	}
 	return ret
 }
@@ -168,7 +164,6 @@ func (d *CoronaList) deaths() []int {
 		if e == nil {
 			ret[i] = t
 		}
-		println(t, ret[i])
 	}
 	return ret
 }
@@ -181,7 +176,6 @@ func (d *CoronaList) serious() interface{} {
 		if e == nil {
 			ret[i] = t
 		}
-		println(t, ret[i])
 	}
 	return ret
 }
@@ -261,13 +255,17 @@ func filename(request *http.Request) string {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	d := getDataJson(r.RequestURI[1:])
-	sw := &strings.Builder{}
-	drawChart(d, sw)
-	d.Charts = template.HTML(sw.String())
-	e := tpl.Lookup("index.gohtml").Execute(w, (d))
-	if e != nil {
-		log.Error(e.Error())
+	if strings.Contains(r.RequestURI, "favicon.ico") {
+		http.Redirect(w, r, "https://s3.amazonaws.com/static-assets/default/logo.png", 301)
+	} else {
+		d := getDataJson(r.RequestURI[1:])
+		sw := &strings.Builder{}
+		drawChart(d, sw)
+		d.Charts = template.HTML(sw.String())
+		e := tpl.Lookup("index.gohtml").Execute(w, (d))
+		if e != nil {
+			log.Error(e.Error())
+		}
 	}
 }
 
