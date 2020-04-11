@@ -136,6 +136,18 @@ func (d *CoronaList) newCases() []int {
 	}
 	return ret
 }
+func (d *CoronaList) active() []int {
+	ret := make([]int, len(d.StatsByCountry))
+	for i, val := range d.StatsByCountry {
+		var t int
+		_, e := fmt.Sscan(strings.ReplaceAll(val.ActiveCasesString, ",", ""), &t)
+		if e == nil {
+			ret[i] = t
+		}
+		println(t, ret[i])
+	}
+	return ret
+}
 
 func (d *CoronaList) newDeaths() []int {
 	ret := make([]int, len(d.StatsByCountry))
@@ -154,6 +166,19 @@ func (d *CoronaList) deaths() []int {
 	for i, val := range d.StatsByCountry {
 		var t int
 		_, e := fmt.Sscan(strings.ReplaceAll(val.TotalDeathsString, ",", ""), &t)
+		if e == nil {
+			ret[i] = t
+		}
+		println(t, ret[i])
+	}
+	return ret
+}
+
+func (d *CoronaList) serious() interface{} {
+	ret := make([]int, len(d.StatsByCountry))
+	for i, val := range d.StatsByCountry {
+		var t int
+		_, e := fmt.Sscan(strings.ReplaceAll(val.SeriousCriticalString, ",", ""), &t)
 		if e == nil {
 			ret[i] = t
 		}
@@ -259,32 +284,83 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value"},
 	)
-	graphTotal.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases())
-	grapTotalDeaths := charts.NewBar()
+	graphTotal.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Active cases", d.active(),
+		charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"})
+	graphTotal.SetSeriesOptions(
+		charts.MLNameTypeItem{Type: "max"},
+		charts.LineOpts{Smooth: true},
+		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
+	)
+	grapTotalDeaths := charts.NewLine()
 	grapTotalDeaths.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 deaths", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value"},
+		charts.ColorOpts{"Black"},
 	)
 	grapTotalDeaths.AddXAxis(d.timeSeries()).AddYAxis("Deaths", d.deaths())
-
-	graphNewCases := charts.NewEffectScatter()
+	grapTotalDeaths.SetSeriesOptions(
+		charts.MLNameTypeItem{Type: "max"},
+		charts.LineOpts{Smooth: true},
+		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
+	)
+	graphNewCases := charts.NewLine()
 	graphNewCases.SetGlobalOptions(charts.TitleOpts{Title: "New cases", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
-		charts.YAxisOpts{Scale: true, Type: "value"},
+		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.XAxisOpts{Scale: true, Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
 	)
 	graphNewCases.AddXAxis(d.timeSeries()).
 		AddYAxis("New cases", d.newCases(), charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"})
-
+	graphNewCases.SetSeriesOptions(
+		charts.MLNameTypeItem{Type: "max"},
+		charts.LineOpts{Smooth: true},
+		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
+	)
 	graphNewD := charts.NewEffectScatter()
 	graphNewD.SetGlobalOptions(charts.TitleOpts{Title: "New deaths", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
-		charts.YAxisOpts{Scale: true, Type: "value"},
+		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.XAxisOpts{Scale: true, Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.ColorOpts{"Black"},
+	)
+	graphNewD.SetSeriesOptions(
+		charts.MLNameTypeItem{Type: "min"},
+		charts.MLNameTypeItem{Type: "max"},
+		charts.LineOpts{Smooth: true},
+		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
 	)
 	graphNewD.AddXAxis(d.timeSeries()).
 		AddYAxis("New deaths", d.newDeaths(), charts.RippleEffectOpts{Period: 4, Scale: 10, BrushType: "stroke"})
+
+	graphSerious := charts.NewLine()
+	graphSerious.SetGlobalOptions(charts.TitleOpts{Title: "Serious cases", Subtitle: d.Country},
+		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
+		charts.TooltipOpts{Show: true},
+		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.XAxisOpts{Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.VisualMapOpts{Calculable: false, Max: 100, Min: 0, InRange: charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
+		charts.ColorOpts{"Orange", "Yellow", "Navy"},
+	)
+
+	graphSerious.AddXAxis(d.timeSeries()).AddYAxis("Serious", d.serious(),
+		charts.LabelTextOpts{Show: true},
+		charts.LiquidOpts{IsWaveAnimation: true},
+	)
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
 	if e == nil {
 		defer os.Remove(f.Name())
@@ -292,6 +368,7 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		grapTotalDeaths.Render(sw, f)
 		graphNewCases.Render(sw, f)
 		graphNewD.Render(sw, f)
+		graphSerious.Render(sw, f)
 	} else {
 	}
 }

@@ -12,11 +12,12 @@
 </head>
 <body>
 <!-- text-center h1 text-danger bg-dark" style="margin-bottom:0"> -->
-<div class="h1 w-75" style="text-align: center;">COVID-19 statistics in <span
-            class="badge badge-secondary">{{.Country}} </span> <sub>{{.URL}} request processed with <a
-                href="https://rapidapi.com">RapidAPI</a> API</sub>
+<div class="w-75 h1" style="text-align: center;">COVID-19 statistics in <span
+            class="badge badge-secondary">{{.Country}} </span>
 </div>
-
+<sub>with <a href="https://rapidapi.com"><img class="rounded"
+                                              src="https://rapidapi.com/static-assets/default/logo.svg"/></a>
+</sub>
 <div class="container p-3 rounded text-white">
     <div class="spinner-border text-muted"></div>
     <div class="spinner-border text-primary"></div>
@@ -46,7 +47,7 @@
             {{.Charts}}
         </div>
         <div class="col-9">
-            <a type="button" class="btn btn-primary" href="../download/{{.Country}}">Download Data</a>
+            <a type="button" class="btn btn-info" href="../download/{{.Country}}">Download Data</a>
             <button type="button" class="btn btn-success align-middle dropdown-toggle" data-toggle="dropdown">
                 See Data
             </button>
