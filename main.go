@@ -107,7 +107,6 @@ func (d *CoronaList) timeSeries() []string {
 		t := strings.Split(val.RecordDate, " ")[0]
 		//t, e := time.Parse("2006-01-02 15:04:05.000", val.RecordDate)
 		ret[i] = t
-		println(val.RecordDate, ret[i])
 	}
 	return ret
 }
