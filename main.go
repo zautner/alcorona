@@ -228,7 +228,7 @@ func main() {
 	http.HandleFunc("/assets/", load)
 	http.HandleFunc("/chart/", chart)
 	http.HandleFunc("/", index)
-	err := http.ListenAndServe(":80", nil)
+	err := http.ListenAndServe(":8080", nil)
 	if nil != err {
 		log.Error(err.Error())
 	}
