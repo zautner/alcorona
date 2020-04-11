@@ -400,7 +400,10 @@ func readData(country string, asc bool) (*CoronaList, error) {
 		panic(err)
 	}
 	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(res.Body)
+	if nil != err || len(body) < 1 {
+		return readData("Israel", asc)
+	}
 	log.Info(string(body)[:1])
 	d := CoronaList{URL: []string{country}, asc: asc, Countries: countries.AffectedCountries}
 	json.Unmarshal(body, &d)
