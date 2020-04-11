@@ -350,7 +350,7 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		charts.XAxisOpts{Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
 			Opacity: 0.75,
 		}}},
-		charts.VisualMapOpts{Calculable: false, Max: 100, Min: 0, InRange: charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
+		charts.VisualMapOpts{Calculable: false, Max: float32(d.totalCases()[len(d.totalCases())-1] >> 7), Min: 0, InRange: charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
 		charts.ColorOpts{"Orange", "Yellow", "Navy"},
 	)
 
