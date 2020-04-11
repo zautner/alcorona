@@ -1,35 +1,110 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0
     minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/index.css" content>
-    <title>AlCorona</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/public/css/index.css" content>
+    <title>Corona - facts</title>
 </head>
-<body class="jumbotronr">
-<div class="h3 text-center">
-  Corona cases in {{.Country}} 
+<body>
+<!-- text-center h1 text-danger bg-dark" style="margin-bottom:0"> -->
+<div class="h1 w-75" style="text-align: center;">COVID-19 statistics in <span
+            class="badge badge-secondary">{{.Country}} </span> <sub>{{.URL}} request processed with <a
+                href="https://rapidapi.com">RapidAPI</a> API</sub>
 </div>
-<table class="table table-bordered table-striped table-responsive">
-<thead>
-    <tr class="th">
-        <td>&nbsp;RecordDate&nbsp; <td>&nbsp;TotalCasesString&nbsp; <td>&nbsp; NewCasesString&nbsp; <td>&nbsp;ActiveCasesString&nbsp; <td>&nbsp;TotalDeathsString&nbsp; <td>&nbsp;NewDeathsString&nbsp; <td>&nbsp;TotalRecoveredString&nbsp; <td>&nbsp;SeriousCriticalString&nbsp; 
- </tr>
-</thead>
-<tbody>
-     {{range .StatsByCountry}}
-     <tr style="width:100%">
-     <td>&nbsp;{{.RecordDate}}&nbsp; <td>&nbsp;{{.TotalCasesString}}&nbsp; <td>&nbsp;{{.NewCasesString}}&nbsp; <td>&nbsp;{{.ActiveCasesString}}&nbsp; <td>&nbsp;{{.TotalDeathsString}}&nbsp; <td>&nbsp;{{.NewDeathsString}}&nbsp; <td>&nbsp;{{.TotalRecoveredString}}&nbsp; <td>&nbsp;{{.SeriousCriticalString}}&nbsp; 
-    </tr>
-    {{end}}
-</tbody>
-<sub>{{.URL}} request processed with <a href="https://rapidapi.com">RapidAPI</a>      API</sub> 
-</table>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<div class="container p-3 rounded text-white">
+    <div class="spinner-border text-muted"></div>
+    <div class="spinner-border text-primary"></div>
+    <div class="spinner-border text-success"></div>
+    <div class="spinner-border text-info"></div>
+    <div class="spinner-border text-warning"></div>
+    <div class="spinner-border text-danger"></div>
+    <div class="spinner-border text-secondary"></div>
+    <div class="spinner-border text-dark"></div>
+    <div class="spinner-border text-light"></div>
+</div>
+<div class="container-fluid  bg-light ">
+    <!-- -->
+
+    <div class="row">
+        <div class="col-3">
+            <div class="dropdown">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                    Choose a country
+                </button>
+                <div class="dropdown-menu">
+                    {{range .Countries}}
+                        <a class="dropdown-item" href="../{{.}}">{{.}}</a>
+                    {{end}}
+                </div>
+            </div>
+            {{.Charts}}
+        </div>
+        <div class="col-9">
+            <a type="button" class="btn btn-primary" href="../download/{{.Country}}">Download Data</a>
+            <button type="button" class="btn btn-success align-middle dropdown-toggle" data-toggle="dropdown">
+                See Data
+            </button>
+            <div class="dropdown-menu text-left table-responsive-xl  bg-dark text-white block">
+
+                <table class="table table-bordered table-striped  bg-dark text-white table-condensed small shadow">
+                    <thead class="thead-dark">
+                    <tr class="th">
+                        <td class="text-justified">&nbsp;RecordDate&nbsp;
+                        <td>&nbspTotal Cases
+                        <td>New Cases
+                        <td>Active Cases
+                        <td>Total Deaths
+                        <td>New Deaths
+                        <td>Total Recovered
+                        <td>Serious Critical
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{range .StatsByCountry}}
+                        <tr style="width:100%">
+                            <td class="text-justified">&nbsp;{{.RecordDate}}&nbsp;
+                            <td>&nbsp;{{.TotalCasesString}}&nbsp;
+                            <td>&nbsp;{{.NewCasesString}}&nbsp;
+                            <td>&nbsp;{{.ActiveCasesString}}&nbsp;
+                            <td>&nbsp;{{.TotalDeathsString}}&nbsp;
+                            <td>&nbsp;{{.NewDeathsString}}&nbsp;
+                            <td>&nbsp;{{.TotalRecoveredString}}&nbsp;
+                            <td>&nbsp;{{.SeriousCriticalString}}&nbsp;
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="min-height: 25px">
+        <div class="spinner-grow text-muted" style="min-height:19px"></div>
+        <div class="spinner-grow text-primary" style="min-height:19px"></div>
+        <div class="spinner-grow text-success" style="min-height:19px"></div>
+        <div class="spinner-grow text-info" style="min-height:19px"></div>
+        <div class="spinner-grow text-warning" style="min-height:19px"></div>
+        <div class="spinner-grow text-danger" style="min-height:19px"></div>
+        <div class="spinner-grow text-secondary" style="min-height:19px"></div>
+        <div class="spinner-grow text-dark" style="min-height:19px"></div>
+        <div class="spinner-grow text-light" style="min-height:19px"></div>
+    </div>
+</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 </body>
 </html>
