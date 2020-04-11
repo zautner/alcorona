@@ -350,13 +350,18 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		charts.XAxisOpts{Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
 			Opacity: 0.75,
 		}}},
-		charts.VisualMapOpts{Calculable: false, Max: float32(d.totalCases()[len(d.totalCases())-1] >> 7), Min: 0, InRange: charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
+
+		charts.VisualMapOpts{Calculable: false, Max: func() float32 {
+			if len(d.totalCases()) > 0 {
+				return float32(d.totalCases()[len(d.totalCases())-1] >> 7)
+			}
+			return 0.01
+		}(), Min: 0, InRange: charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
 		charts.ColorOpts{"Orange", "Yellow", "Navy"},
 	)
 
 	graphSerious.AddXAxis(d.timeSeries()).AddYAxis("Serious", d.serious(),
 		charts.LabelTextOpts{Show: true},
-		charts.LiquidOpts{IsWaveAnimation: true},
 	)
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
 	if e == nil {
