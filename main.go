@@ -190,7 +190,7 @@ func countriesInit() {
 	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
-	log.Error(string(body)[:1])
+	log.Info(string(body)[:1])
 
 	json.Unmarshal(body, &countries)
 	sort.Strings(countries.AffectedCountries)
@@ -297,7 +297,7 @@ func drawChart(d *CoronaList, sw io.Writer) {
 }
 
 func getDataJson(uri string) *CoronaList {
-	log.Error(uri)
+	log.Info(uri)
 	country := "Israel"
 	splitten := strings.Split(uri, "/")
 	if len(splitten) > 0 {
@@ -324,7 +324,7 @@ func readData(country string, asc bool) (*CoronaList, error) {
 	}
 	defer res.Body.Close()
 	body, _ := ioutil.ReadAll(res.Body)
-	log.Error(string(body)[:1])
+	log.Info(string(body)[:1])
 	d := CoronaList{URL: []string{country}, asc: asc, Countries: countries.AffectedCountries}
 	json.Unmarshal(body, &d)
 	statsByCountry := make([]CoronaRecord, 0)
