@@ -35,7 +35,7 @@ const pageTemplate = `{{- define "page" }}
 	</div>
 	{{ end }}`
 const chartTemplate = `{{- define "chart" }}
-<div class=container-fluid>
+<div media py-lg-5>
 {{- range .JSAssets.Values }}
     <script src="{{ . }}"></script>
 {{- end }}
@@ -45,7 +45,7 @@ const chartTemplate = `{{- define "chart" }}
 {{- template "routers" . }}
 {{- template "base" . }}
 <style>
-    .item {margin: auto;}
+    .item {margin: auto; padding-top:30px}
 </style>
 </div>
 {{ end }}
@@ -57,128 +57,6 @@ var (
 	HEADER_TWO       = os.Getenv("header_rapidapi_key")
 	HEADER_TWO_VALUE = os.Getenv("header_rapidapi_key_value")
 )
-
-//////// TYPES /////////
-type Countries struct {
-	AffectedCountries []string `json:"affected_countries"`
-}
-
-/*CoronaRecord holds one report per country */
-type CoronaRecord struct {
-	IDString                   string `json:"id,unknown"`
-	CountryName                string `json:"country_name,unknown"`
-	TotalCasesString           string `json:"total_cases,unknown"`
-	NewCasesString             string `json:"new_cases,unknown"`
-	ActiveCasesString          string `json:"active_cases,unknown"`
-	TotalDeathsString          string `json:"total_deaths,unknown"`
-	NewDeathsString            string `json:"new_deaths,unknown"`
-	TotalRecoveredString       string `json:"total_recovered,unknown"`
-	SeriousCriticalString      string `json:"serious_critical,unknown"`
-	Region                     string `json:"region,unknown"`
-	TotalCasesPerMillionString string `json:"total_cases_per1m,unknown"`
-	RecordDate                 string `json:"record_date,unknown"`
-}
-
-/* Full per-country data */
-type CoronaList struct {
-	Country        string         `json:"country,unknown"`
-	StatsByCountry []CoronaRecord `json:"stat_by_country,unknown"`
-	URL            []string
-	sb             string
-	asc            bool
-	Countries      []string
-	Charts         template.HTML
-}
-
-func (d *CoronaList) Len() int { return len(d.StatsByCountry) }
-func (d *CoronaList) Swap(i, j int) {
-	temp := d.StatsByCountry[i]
-	d.StatsByCountry[i] = d.StatsByCountry[j]
-	d.StatsByCountry[j] = temp
-}
-func (d *CoronaList) Less(i, j int) bool {
-	return d.asc == (strings.Compare(d.StatsByCountry[i].RecordDate, d.StatsByCountry[j].RecordDate) < 0)
-}
-
-func (d *CoronaList) timeSeries() []string {
-	//ret := make([]time.Time, len(Countries.StatsByCountry))
-	ret := make([]string, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		t := strings.Split(val.RecordDate, " ")[0]
-		//t, e := time.Parse("2006-01-02 15:04:05.000", val.RecordDate)
-		ret[i] = t
-	}
-	return ret
-}
-
-func (d *CoronaList) totalCases() []int {
-	ret := make([]int, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		var t int
-		_, e := fmt.Sscan(strings.ReplaceAll(val.TotalCasesString, ",", ""), &t)
-		if e == nil {
-			ret[i] = t
-		}
-	}
-	return ret
-}
-func (d *CoronaList) newCases() []int {
-	ret := make([]int, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		var t int
-		_, e := fmt.Sscan(strings.ReplaceAll(val.NewCasesString, ",", ""), &t)
-		if e == nil {
-			ret[i] = t
-		}
-	}
-	return ret
-}
-func (d *CoronaList) active() []int {
-	ret := make([]int, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		var t int
-		_, e := fmt.Sscan(strings.ReplaceAll(val.ActiveCasesString, ",", ""), &t)
-		if e == nil {
-			ret[i] = t
-		}
-	}
-	return ret
-}
-
-func (d *CoronaList) newDeaths() []int {
-	ret := make([]int, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		var t int
-		_, e := fmt.Sscan(strings.ReplaceAll(val.NewDeathsString, ",", ""), &t)
-		if e == nil {
-			ret[i] = t
-		}
-	}
-	return ret
-}
-func (d *CoronaList) deaths() []int {
-	ret := make([]int, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		var t int
-		_, e := fmt.Sscan(strings.ReplaceAll(val.TotalDeathsString, ",", ""), &t)
-		if e == nil {
-			ret[i] = t
-		}
-	}
-	return ret
-}
-
-func (d *CoronaList) serious() interface{} {
-	ret := make([]int, len(d.StatsByCountry))
-	for i, val := range d.StatsByCountry {
-		var t int
-		_, e := fmt.Sscan(strings.ReplaceAll(val.SeriousCriticalString, ",", ""), &t)
-		if e == nil {
-			ret[i] = t
-		}
-	}
-	return ret
-}
 
 //////// VARIABLES /////////
 var tpl *template.Template
@@ -275,13 +153,20 @@ func chart(w http.ResponseWriter, r *http.Request) {
 }
 
 func drawChart(d *CoronaList, sw io.Writer) {
+	totalCases := d.totalCases()
+	active := d.active()
+	deaths := d.deaths()
+	newCases := d.newCases()
+	newDeaths := d.newDeaths()
+	serious := d.serious()
+	stats := d.stats()
 	graphTotal := charts.NewLine()
 	graphTotal.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 cases", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value"},
 	)
-	graphTotal.AddXAxis(d.timeSeries()).AddYAxis("Total cases", d.totalCases()).AddYAxis("Active cases", d.active(),
+	graphTotal.AddXAxis(d.timeSeries()).AddYAxis("Total cases", totalCases.series).AddYAxis("Active cases", active.series,
 		charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"})
 	graphTotal.SetSeriesOptions(
 		charts.MLNameTypeItem{Type: "max"},
@@ -295,14 +180,14 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		charts.YAxisOpts{Scale: true, Type: "value"},
 		charts.ColorOpts{"Black"},
 	)
-	grapTotalDeaths.AddXAxis(d.timeSeries()).AddYAxis("Deaths", d.deaths())
+	grapTotalDeaths.AddXAxis(d.timeSeries()).AddYAxis("Deaths", deaths.series)
 	grapTotalDeaths.SetSeriesOptions(
 		charts.MLNameTypeItem{Type: "max"},
 		charts.LineOpts{Smooth: true},
 		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
 	)
 	graphNewCases := charts.NewLine()
-	graphNewCases.SetGlobalOptions(charts.TitleOpts{Title: "New cases", Subtitle: d.Country},
+	graphNewCases.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 New cases", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
@@ -311,16 +196,21 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		charts.XAxisOpts{Scale: true, Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
 			Opacity: 0.75,
 		}}},
+		charts.VisualMapOpts{
+			Calculable: false,
+			Max:        200,
+			Min:        10,
+			InRange:    charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
 	)
 	graphNewCases.AddXAxis(d.timeSeries()).
-		AddYAxis("New cases", d.newCases(), charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"})
+		AddYAxis("New cases", newCases.series, charts.RippleEffectOpts{Period: 3, Scale: 6, BrushType: "fill"})
 	graphNewCases.SetSeriesOptions(
 		charts.MLNameTypeItem{Type: "max"},
 		charts.LineOpts{Smooth: true},
 		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
 	)
 	graphNewD := charts.NewEffectScatter()
-	graphNewD.SetGlobalOptions(charts.TitleOpts{Title: "New deaths", Subtitle: d.Country},
+	graphNewD.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 New deaths", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
@@ -338,10 +228,51 @@ func drawChart(d *CoronaList, sw io.Writer) {
 		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
 	)
 	graphNewD.AddXAxis(d.timeSeries()).
-		AddYAxis("New deaths", d.newDeaths(), charts.RippleEffectOpts{Period: 4, Scale: 10, BrushType: "stroke"})
+		AddYAxis("New deaths", newDeaths.series, charts.RippleEffectOpts{Period: 4, Scale: 10, BrushType: "stroke"})
+	graphNewDL := charts.NewLine()
+	graphNewDL.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 cases", Subtitle: d.Country},
+		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
+		charts.TooltipOpts{Show: true},
+		charts.YAxisOpts{Scale: true, Type: "value"},
+	)
+	graphNewDL.SetSeriesOptions(
+		charts.MLNameTypeItem{Type: "max"},
+		charts.MLNameTypeItem{Type: "min"},
+		charts.MLNameTypeItem{Type: "average"},
+		charts.LineOpts{Smooth: true},
+		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
+	)
+	graphNewDL.AddXAxis(d.timeSeries()).
+		AddYAxis("", newDeaths.series, charts.RippleEffectOpts{Period: 4, Scale: 10, BrushType: "stroke"})
+	graphNewD.Overlap(graphNewDL)
+	graphStats := charts.NewEffectScatter()
+	graphStats.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 stats", Subtitle: d.Country},
+		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
+		charts.TooltipOpts{Show: true},
+		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.XAxisOpts{Scale: true, Type: "category", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
+			Opacity: 0.75,
+		}}},
+		charts.ColorOpts{"Black"},
+		charts.VisualMapOpts{
+			Calculable: false,
+			Max:        float32(stats.max) / 10,
+			Min:        float32(stats.min) / 10,
+			InRange:    charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
+	)
+	graphStats.SetSeriesOptions(
+		charts.MLNameTypeItem{Type: "min"},
+		charts.MLNameTypeItem{Type: "max"},
+		charts.LineOpts{Smooth: true, Stack: "0"},
+		charts.MLStyleOpts{Label: charts.LabelTextOpts{Show: true, Formatter: "{a}: {b}"}},
+	)
+	graphStats.AddXAxis(d.timeSeries()).
+		AddYAxis("Per-Million", stats.series, charts.RippleEffectOpts{Period: 10, Scale: 4, BrushType: "fill"})
 
 	graphSerious := charts.NewLine()
-	graphSerious.SetGlobalOptions(charts.TitleOpts{Title: "Serious cases", Subtitle: d.Country},
+	graphSerious.SetGlobalOptions(charts.TitleOpts{Title: "COVID-19 Serious cases", Subtitle: d.Country},
 		charts.LegendOpts{Left: "200px", Top: "5px", TextStyle: charts.TextStyleOpts{FontSize: 12}},
 		charts.TooltipOpts{Show: true},
 		charts.YAxisOpts{Scale: true, Type: "value", SplitArea: charts.SplitAreaOpts{Show: true, AreaStyle: charts.AreaStyleOpts{
@@ -351,26 +282,26 @@ func drawChart(d *CoronaList, sw io.Writer) {
 			Opacity: 0.75,
 		}}},
 
-		charts.VisualMapOpts{Calculable: false, Max: func() float32 {
-			if len(d.totalCases()) > 0 {
-				return float32(d.totalCases()[len(d.totalCases())-1] >> 7)
-			}
-			return 0.01
-		}(), Min: 0, InRange: charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
+		charts.VisualMapOpts{
+			Calculable: false,
+			Max:        float32(serious.max) / 10,
+			Min:        float32(serious.min) / 10,
+			InRange:    charts.VMInRange{Color: []string{"#50a3ba", "#eac736", "#d94e5d"}}},
 		charts.ColorOpts{"Orange", "Yellow", "Navy"},
 	)
 
-	graphSerious.AddXAxis(d.timeSeries()).AddYAxis("Serious", d.serious(),
+	graphSerious.AddXAxis(d.timeSeries()).AddYAxis("Serious", serious.series,
 		charts.LabelTextOpts{Show: true},
 	)
 	f, e := os.Create("line-" + strconv.Itoa(rand.Int()) + ".html")
 	if e == nil {
 		defer os.Remove(f.Name())
-		graphTotal.Render(sw, f)
-		grapTotalDeaths.Render(sw, f)
 		graphNewCases.Render(sw, f)
-		graphNewD.Render(sw, f)
 		graphSerious.Render(sw, f)
+		graphTotal.Render(sw, f)
+		graphStats.Render(sw, f)
+		grapTotalDeaths.Render(sw, f)
+		graphNewD.Render(sw, f)
 	} else {
 	}
 }

@@ -3,62 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="74LxNqlOKNR8SCTh4OieYMBC3BFZP9qHNHj1sf6bu4o"/>
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0
-    minimum-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=10.0
+    minimum-scale=0.1">
     <meta http-equiv="X-UA-Compatible">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="stylesheet" href="/public/css/index.css" content>
     <title>Corona - facts</title>
 </head>
-<body>
+<body class="scrollable">
 <!-- text-center h1 text-danger bg-dark" style="margin-bottom:0"> -->
 <div class="w-75 h1" style="text-align: center;">COVID-19 statistics in <span
-            class="badge badge-secondary">{{.Country}} </span>
+            class="badge badge-secondary badge-pill">{{.Country}} </span>
 </div>
-<sub>with <a href="https://rapidapi.com"><img class="rounded"
-                                              src="https://rapidapi.com/static-assets/default/logo.svg"/></a>
+<sub>made with love<br/><a href="https://rapidapi.com"><img class="rounded"
+                                                            src="https://rapidapi.com/static-assets/default/logo.svg"/></a>
 </sub>
-<div class="container p-3 rounded text-white">
-    <div class="spinner-border text-muted"></div>
-    <div class="spinner-border text-primary"></div>
-    <div class="spinner-border text-success"></div>
-    <div class="spinner-border text-info"></div>
-    <div class="spinner-border text-warning"></div>
-    <div class="spinner-border text-danger"></div>
-    <div class="spinner-border text-secondary"></div>
-    <div class="spinner-border text-dark"></div>
-    <div class="spinner-border text-light"></div>
-</div>
-<div class="container-fluid  bg-light ">
-    <!-- -->
+<div class="row">
+    <div class="col-3 ">
 
-    <div class="row">
-        <div class="col-3">
-            <div class="dropdown">
-                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-                    Choose a country
-                </button>
-                <div class="dropdown-menu">
-                    {{range .Countries}}
-                        <a class="dropdown-item" href="../{{.}}">{{.}}</a>
-                    {{end}}
-                </div>
+        {{.Charts}}
+
+    </div>
+    <div class="col-9">
+        <div class="dropdown">
+            <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                Choose a country
+            </button>
+            <div class="dropdown-menu">
+                {{range .Countries}}
+                    <a class="dropdown-item" href="../{{.}}">{{.}}</a>
+                {{end}}
             </div>
-            {{.Charts}}
         </div>
-        <div class="col-9">
-            <a type="button" class="btn btn-info" href="../download/{{.Country}}">Download Data</a>
+        <a type="button" class="btn btn-info" href="../download/{{.Country}}">Download Data</a>
+        <div class="dropdown" >
             <button type="button" class="btn btn-success align-middle dropdown-toggle" data-toggle="dropdown">
                 See Data
             </button>
-            <div class="dropdown-menu text-left table-responsive-xl  bg-dark text-white block">
-
+            <div class="dropdown-menu text-left bg-dark text-white  container-lg-fluid">
                 <table class="table table-bordered table-striped  bg-dark text-white table-condensed small shadow">
                     {{/*                    <thead class="thead-dark bg-dark text-white ">*/}}
                     <tr class="th thead-dark bg-dark text-white ">
                         <td class="text-justified ">&nbsp;RecordDate&nbsp;
-                        <td>&nbspTotal Cases
+                        <td>Total Cases
                         <td>New Cases
                         <td>Active Cases
                         <td>Total Deaths
@@ -85,17 +73,14 @@
             </div>
         </div>
     </div>
-    <div class="row" style="min-height: 25px">
-        <div class="spinner-grow text-muted" style="min-height:19px"></div>
-        <div class="spinner-grow text-primary" style="min-height:19px"></div>
-        <div class="spinner-grow text-success" style="min-height:19px"></div>
-        <div class="spinner-grow text-info" style="min-height:19px"></div>
-        <div class="spinner-grow text-warning" style="min-height:19px"></div>
-        <div class="spinner-grow text-danger" style="min-height:19px"></div>
-        <div class="spinner-grow text-secondary" style="min-height:19px"></div>
-        <div class="spinner-grow text-dark" style="min-height:19px"></div>
-        <div class="spinner-grow text-light" style="min-height:19px"></div>
-    </div>
+</div>
+<div class="row" style="min-height: 25px">
+    &nbsp;
+</div>
+<div class="container-fluid  bg-light ">
+    <!-- -->
+
+
 </div>
 </div>
 
