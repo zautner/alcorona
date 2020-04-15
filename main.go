@@ -35,7 +35,7 @@ const pageTemplate = `{{- define "page" }}
 	</div>
 	{{ end }}`
 const chartTemplate = `{{- define "chart" }}
-<div media py-lg-5>
+<div class="py-lg-5 media">
 {{- range .JSAssets.Values }}
     <script src="{{ . }}"></script>
 {{- end }}
@@ -140,7 +140,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		sw := &strings.Builder{}
 		drawChart(d, sw)
 		d.Charts = template.HTML(sw.String())
-		e := tpl.Lookup("index.gohtml").Execute(w, (d))
+		e := tpl.Lookup("index.gohtml").Execute(w, d)
 		if e != nil {
 			log.Error(e.Error())
 		}
